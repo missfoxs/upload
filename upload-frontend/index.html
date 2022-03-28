@@ -9,7 +9,7 @@
   <body>
     <div onclick="getData()">点击请求数据</div>
     <div onclick="sendData()">点击发送数据</div>
-    <div onclick="getFile()">点击请求文件</div>
+    <div onclick="getFile()">点击请求文件</div><div>进度： <span id="process"></span></div>
     <div onclick="getImage()">点击请求图片</div>
     <input id="upload" type="file" onchange="uploadFile(event)"></input>
     <img src="" id="img" alt="" />
@@ -42,10 +42,24 @@
       function getFile() {
         fetch("http://localhost:3002/api/file", {
           responseType: "blob",
-        }).then(res => {
-          res.text().then(blob => {
-            console.log(blob);
-          });
+        }).then(async (res) => {
+          const reader = res.body.getReader();
+            const totalLengt = +res.headers.get('Content-Length');
+            let receivedLength = 0; // 当前接收到了这么多字节
+            let chunks = []; // 接收到的二进制块的数组（包括 body）
+            const node = document.getElementById('process');
+
+          while(true) {
+            const {done, value} = await reader.read()
+            if (done) {
+              break;
+            }
+            chunks.push(value)
+            receivedLength += value.length;
+            console.log(`Received ${receivedLength} of ${totalLengt}`)
+            const process = (receivedLength / totalLengt) * 100
+            node.innerText = Math.ceil(process) + '%'
+          }
         });
       }
 

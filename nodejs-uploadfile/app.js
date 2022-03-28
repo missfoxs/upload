@@ -41,6 +41,7 @@ app.post("/api/user", (req, res) => {
   res.send({ message: "保存成功" });
 });
 
+// 获取文件
 app.get("/api/file", (req, res) => {
   res.download("./uploads/git.zip", err => {
     if (err) {
@@ -51,6 +52,7 @@ app.get("/api/file", (req, res) => {
   });
 });
 
+// 获取图片
 app.get("/api/img", (req, res) => {
   res.download("./uploads/FLOWER.JPG", err => {
     if (err) {
