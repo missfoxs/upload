@@ -79,3 +79,7 @@
 127.0.0.1 - - [28/Mar/2022:19:17:49 +0800] "GET /api/user HTTP/1.1" 500 1209 "http://localhost:8004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
 127.0.0.1 - - [28/Mar/2022:19:18:14 +0800] "POST /api/user HTTP/1.1" 201 5 "http://localhost:8004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
 127.0.0.1 - - [28/Mar/2022:19:18:31 +0800] "POST /api/user HTTP/1.1" 500 1209 "http://localhost:8004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
+127.0.0.1 - - [28/Mar/2022:19:34:32 +0800] "GET /api/file HTTP/1.1" 200 276930216 "http://localhost:8004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
+127.0.0.1 - - [28/Mar/2022:19:46:02 +0800] "GET /api/file HTTP/1.1" 200 170942120 "http://localhost:8004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
+127.0.0.1 - - [28/Mar/2022:19:49:58 +0800] "GET /api/file HTTP/1.1" 200 150228648 "http://localhost:8004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
+127.0.0.1 - - [28/Mar/2022:19:50:22 +0800] "GET /api/file HTTP/1.1" 200 121831080 "http://localhost:8004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
