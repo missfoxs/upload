@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div onclick="getData()">点击请求数据</div>
+    <div onclick="sendData()">点击发送数据</div>
+    <div onclick="getFile()">点击请求文件</div>
+    <div onclick="getImage()">点击请求图片</div>
+    <input id="upload" type="file" onchange="uploadFile(event)"></input>
+    <img src="" id="img" alt="" />
+    <script>
+      // 设置cookie
+      document.cookie="name=xiaoming";
+      
+      // 请求数据
+      function getData() {
+        fetch("http://localhost:3002/api/user", {
+          credentials: 'include'  // 即使不同源也可以发送请求, 但是要服务端做配合
+        }).then(res => {
+          console.log(res);
+          res.json().then(res => {
+            console.log(res);
+          });
+        });
+      }
+
+      function sendData() {
+        fetch('http://localhost:3002/api/user', {
+          method: 'POST',
+          headers: {
+            contentType: 'application/json'
+          },
+          body: JSON.stringify({name: 'jack'})
+        })
+      }
+
+      function getFile() {
+        fetch("http://localhost:3002/api/file", {
+          responseType: "blob",
+        }).then(res => {
+          res.text().then(blob => {
+            console.log(blob);
+          });
+        });
+      }
+
+      function getImage() {
+        fetch("http://localhost:3002/api/img", {
+          responseType: "blob",
+        }).then(res => {
+          res.blob().then(blob => {
+            console.log(blob)
+            const src = URL.createObjectURL(blob);
+            document.getElementById("img").src = src;
+          });
+        });
+      }
+      function uploadFile(event) {
+        const file = event.target.files[0];
+        const data = new FormData()
+        data.append('image', file);
+        data.append('user', 'zhouming');
+        fetch('http://localhost:3002/api/uploadFile', {
+          method: 'POST',
+          body: data,  // 没有data，只有body
+        })
+      }
+    </script>
+  </body>
+</html>

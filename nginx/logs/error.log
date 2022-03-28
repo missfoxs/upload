@@ -1,0 +1,25 @@
+2022/03/24 17:43:12 [emerg] 85792#89172: unknown directive "listen:" in D:\nginx/.\conf\nginx.conf:82
+2022/03/24 17:43:27 [emerg] 95968#95532: unknown directive "listen:" in D:\nginx/.\conf\nginx.conf:82
+2022/03/24 17:43:48 [emerg] 90668#94948: bind() to 0.0.0.0:8004 failed (10013: An attempt was made to access a socket in a way forbidden by its access permissions)
+2022/03/24 17:44:42 [emerg] 95476#95516: bind() to 0.0.0.0:8004 failed (10013: An attempt was made to access a socket in a way forbidden by its access permissions)
+2022/03/24 17:45:36 [notice] 88748#94224: signal process started
+2022/03/24 17:45:43 [error] 94696#89124: *8 CreateFile() "D:\nginx/html/favicon.ico" failed (2: The system cannot find the file specified), client: 127.0.0.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "localhost", referrer: "http://localhost/50x.html"
+2022/03/24 17:47:38 [notice] 96224#96208: signal process started
+2022/03/24 17:57:22 [notice] 95628#94432: signal process started
+2022/03/24 17:57:49 [notice] 96712#96716: signal process started
+2022/03/25 16:13:02 [notice] 153996#161784: signal process started
+2022/03/25 16:13:02 [error] 153996#161784: OpenEvent("Global\ngx_reload_87692") failed (2: The system cannot find the file specified)
+2022/03/25 16:13:47 [notice] 160136#150508: signal process started
+2022/03/25 16:13:47 [error] 160136#150508: OpenEvent("Global\ngx_reload_87692") failed (2: The system cannot find the file specified)
+2022/03/25 16:16:31 [notice] 145492#159928: signal process started
+2022/03/25 16:16:38 [notice] 113808#158176: signal process started
+2022/03/25 16:16:38 [error] 113808#158176: CreateFile() "D:\upload-download\nginx/logs/nginx.pid" failed (2: The system cannot find the file specified)
+2022/03/25 16:20:07 [notice] 149088#154756: signal process started
+2022/03/25 16:20:07 [error] 149088#154756: CreateFile() "D:\upload-download\nginx/logs/nginx.pid" failed (2: The system cannot find the file specified)
+2022/03/25 16:20:15 [notice] 159668#162228: signal process started
+2022/03/25 16:20:15 [error] 159668#162228: CreateFile() "D:\upload-download\nginx/logs/nginx.pid" failed (2: The system cannot find the file specified)
+2022/03/25 17:46:20 [error] 130592#155756: *23 upstream timed out (10060: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond) while reading response header from upstream, client: 127.0.0.1, server: localhost, request: "POST /api/uploadFile HTTP/1.1", upstream: "http://[::1]:3000/api/uploadFile", host: "localhost:3002", referrer: "http://localhost:8004/"
+2022/03/25 17:49:01 [error] 130592#155756: *26 upstream timed out (10060: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond) while reading response header from upstream, client: 127.0.0.1, server: localhost, request: "POST /api/uploadFile HTTP/1.1", upstream: "http://127.0.0.1:3000/api/uploadFile", host: "localhost:3002", referrer: "http://localhost:8004/"
+2022/03/25 17:50:06 [error] 130592#155756: *26 WSARecv() failed (10054: An existing connection was forcibly closed by the remote host) while reading response header from upstream, client: 127.0.0.1, server: localhost, request: "POST /api/uploadFile HTTP/1.1", upstream: "http://127.0.0.1:3000/api/uploadFile", host: "localhost:3002", referrer: "http://localhost:8004/"
+2022/03/25 17:50:47 [error] 130592#155756: *26 WSARecv() failed (10054: An existing connection was forcibly closed by the remote host) while reading response header from upstream, client: 127.0.0.1, server: localhost, request: "POST /api/uploadFile HTTP/1.1", upstream: "http://[::1]:3000/api/uploadFile", host: "localhost:3002", referrer: "http://localhost:8004/"
+2022/03/28 18:57:02 [error] 25052#25416: *38 CreateFile() "D:\upload-download\nginx/html/user" failed (2: The system cannot find the file specified), client: 127.0.0.1, server: localhost, request: "POST /user HTTP/1.1", host: "localhost:3002"
