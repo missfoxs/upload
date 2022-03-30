@@ -63,13 +63,18 @@ app.get("/api/img", (req, res) => {
   });
 });
 
+// 上传文件
 app.post("/api/uploadFile", multipartMiddleware, (req, res, next) => {
   const { files, body } = req;
   console.log(files, body);
-  util.editSelf(files, response => {
-    next(response);
-  });
-  res.send({ message: 0 });
+  // util.editSelf(files, response => {
+  //   next(response);
+  // });
+  res.send({ message: "上传成功！" });
+});
+
+app.get("/api/merge", (req, res) => {
+  res.send({ message: "已合并" });
 });
 
 // console.log(editSelf)

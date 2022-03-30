@@ -7,20 +7,24 @@
     <title>Document</title>
   </head>
   <body>
-    <div onclick="getData()">点击请求数据</div>
+    <div id="getData">点击请求数据</div>
     <div onclick="sendData()">点击发送数据</div>
     <div onclick="getFile()">点击请求文件</div><div>进度： <span id="process"></span></div>
     <div onclick="getImage()">点击请求图片</div>
     <input id="upload" type="file" onchange="uploadFile(event)"></input>
+    <button id="uploadButton">上传</button>
     <img src="" id="img" alt="" />
-    <script>
+    
+    <script >
+      // import {sliceFile, generateFetchList} from './upload.js'
+      console.log(sliceFile)
       // 设置cookie
-      document.cookie="name=xiaoming";
+      // document.cookie="name=xiaoming";
       
       // 请求数据
       function getData() {
         fetch("http://localhost:3002/api/user", {
-          credentials: 'include'  // 即使不同源也可以发送请求, 但是要服务端做配合
+          credentials: 'include'  // 即使不同源也可以发送cookie, 但是要服务端做配合
         }).then(res => {
           console.log(res);
           res.json().then(res => {
@@ -28,6 +32,8 @@
           });
         });
       }
+
+      document.getElementById('getData').onclick = getData  // 使用Module后要用这种方式 // TODO:为啥
 
       function sendData() {
         fetch('http://localhost:3002/api/user', {
@@ -74,16 +80,81 @@
           });
         });
       }
-      function uploadFile(event) {
+
+      const UPLOAD_URL = 'http://localhost:3002/api/uploadFile'
+
+      async function mergeRequest() {
+        return await fetch('http://localhost:3002/api/merge')
+      } 
+
+      // 切片文件
+      function sliceFile(file, chunkSize) {
+        const chunkList = [];
+        let start = 0;
+        let end = chunkSize;
+        while (true) {
+          const chunk = file.slice(start, end);
+          if (!chunk.size) break;
+          chunkList.push(chunk);
+          start += chunkSize;
+          end = start + chunkSize;
+        }
+        return chunkList;
+      }
+
+      
+      function generateFetchList(blobs, name, TOKEN) {
+        return blobs
+          .map((blob, index) => {
+            const formdata = new FormData();
+            // formdata.append("type", "upload");
+            // formdata.append("name", name);
+            // formdata.append("token", TOKEN);
+            formdata.append("chunk", blob);
+            formdata.append("hash",  name + '-' + index);
+            // formdata.append("user", "zhouming");
+            return formdata;
+          })
+          .map(data => {
+            fetch(UPLOAD_URL, {
+              method: "POST",
+              mode: "no-cors",
+              body: data,
+            }).then(res => {
+              if (res.ok) {
+                resolve(res)
+              }
+            })
+          });
+      }
+
+      // 开始上传
+      async function uploadFile(event) {
         const file = event.target.files[0];
         const data = new FormData()
         data.append('image', file);
         data.append('user', 'zhouming');
-        fetch('http://localhost:3002/api/uploadFile', {
-          method: 'POST',
-          body: data,  // 没有data，只有body
-        })
+        const size = 0.5 * 1024 * 1024;  // 0.5M
+        const chunkList = sliceFile(file, size)
+        console.log(chunkList);
+        const res = await Promise.all(generateFetchList(chunkList, file.name, new Date()))
+        console.log(res);
+        mergeRequest();
       }
+
+      document.getElementById('upload').onchange = uploadFile;
+      // document.getElementById('uploadButton').onclick = uploadFile;
+
+      // 测试一下能不能使用async方法
+    //  const fn = async () => {
+    //    const res = await new Promise((resolve) => {
+    //      setTimeout(() => {
+    //       resolve(5);
+    //      }, 1000)
+    //    })
+    //    console.log(res);
+    //  }
+    //  fn();
     </script>
   </body>
 </html>
