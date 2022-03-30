@@ -112,6 +112,7 @@
             // formdata.append("token", TOKEN);
             formdata.append("chunk", blob);
             formdata.append("hash",  name + '-' + index);
+            formdata.append('filename', name);
             // formdata.append("user", "zhouming");
             return formdata;
           })
@@ -131,9 +132,9 @@
       // 开始上传
       async function uploadFile(event) {
         const file = event.target.files[0];
-        const data = new FormData()
-        data.append('image', file);
-        data.append('user', 'zhouming');
+        // const data = new FormData()
+        // data.append('image', file);
+        // data.append('user', 'zhouming');
         const size = 0.5 * 1024 * 1024;  // 0.5M
         const chunkList = sliceFile(file, size)
         console.log(chunkList);

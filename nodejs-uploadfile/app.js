@@ -4,9 +4,13 @@ var favicon = require("serve-favicon");
 var logger = require("morgan");
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
-const multipart = require("connect-multiparty");
-const multipartMiddleware = multipart(); // 处理文件上传
+// const multipart = require("connect-multiparty");
+// const multipartMiddleware = multipart(); // 处理文件上传
+const multipart = require("multiparty");
+const fse = require("fs-extra");
 const util = require("./utils/index");
+
+const UPLOAD_DIR = path.resolve(__dirname, "..", "target");
 
 var routes = require("./routes/index");
 var users = require("./routes/users");
@@ -64,13 +68,33 @@ app.get("/api/img", (req, res) => {
 });
 
 // 上传文件
-app.post("/api/uploadFile", multipartMiddleware, (req, res, next) => {
-  const { files, body } = req;
-  console.log(files, body);
-  // util.editSelf(files, response => {
-  //   next(response);
-  // });
-  res.send({ message: "上传成功！" });
+// app.post("/api/uploadFile", multipartMiddleware, (req, res, next) => {
+//   const { files, body } = req;
+//   console.log(files, body);
+//   // util.editSelf(files, response => {
+//   //   next(response);
+//   // });
+//   res.send({ message: "上传成功！" });
+// });
+
+app.post("/api/uploadFile", (req, res) => {
+  const form = new multipart.Form();
+  form.parse(req, async (err, fields, file) => {
+    console.log(fields);
+    const { filename, hash } = fields;
+    const { chunk } = file;
+    // console.log(filename, hash, chunk);
+
+    const chunkDir = path.resolve(UPLOAD_DIR, filename[0]);  // 为啥传过来是个数组
+
+    // 创建目录
+    if (!fse.existsSync(chunkDir)) {
+      await fse.mkdirs(chunkDir);
+    }
+
+    await fse.move(chunk.path, `${chunkDir}/${hash[0]}`);
+  });
+  res.end("received!!");
 });
 
 app.get("/api/merge", (req, res) => {
