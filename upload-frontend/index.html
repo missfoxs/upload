@@ -7,12 +7,13 @@
     <title>Document</title>
   </head>
   <body>
-    <div id="getData">点击请求数据</div>
+    <!-- <div id="getData">点击请求数据</div>
     <div onclick="sendData()">点击发送数据</div>
     <div onclick="getFile()">点击请求文件</div><div>进度： <span id="process"></span></div>
-    <div onclick="getImage()">点击请求图片</div>
+    <div onclick="getImage()">点击请求图片</div> -->
     <input id="upload" type="file" onchange="uploadFile(event)"></input>
-    <button id="uploadButton">上传</button>
+    <!-- <button id="uploadButton">上传</button> -->
+    <div id="uploadButton">合并</div>
     <img src="" id="img" alt="" />
     
     <script >
@@ -33,7 +34,7 @@
         });
       }
 
-      document.getElementById('getData').onclick = getData  // 使用Module后要用这种方式 // TODO:为啥
+      // document.getElementById('getData').onclick = getData  // 使用Module后要用这种方式 // TODO:为啥
 
       function sendData() {
         fetch('http://localhost:3002/api/user', {
@@ -83,8 +84,14 @@
 
       const UPLOAD_URL = 'http://localhost:3002/api/uploadFile'
 
-      async function mergeRequest() {
-        return await fetch('http://localhost:3002/api/merge')
+      async function mergeRequest(filename) {
+        return await fetch('http://localhost:3002/api/merge', {
+          method: 'post',
+          headers: {
+            contentType: 'applicaiont/json'
+          },
+          body: JSON.stringify({filename})
+        })
       } 
 
       // 切片文件
@@ -140,7 +147,7 @@
         console.log(chunkList);
         const res = await Promise.all(generateFetchList(chunkList, file.name, new Date()))
         console.log(res);
-        mergeRequest();
+        mergeRequest(file.name);
       }
 
       document.getElementById('upload').onchange = uploadFile;
@@ -156,6 +163,17 @@
     //    console.log(res);
     //  }
     //  fn();
+    // console.log(1)
+    // console.log(document.getElementById('uploadButton'))
+    document.getElementById('uploadButton').onclick = function(){
+      fetch('http://localhost:3002/api/merge', {
+        method: 'post',
+        headers: {
+          contentType: 'applicaiont/json'
+        },
+        body: JSON.stringify({filename: 'upload-resume.zip'})
+      })
+    }
     </script>
   </body>
 </html>
