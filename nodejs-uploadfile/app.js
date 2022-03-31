@@ -83,21 +83,65 @@ app.post("/api/uploadFile", (req, res) => {
     console.log(fields);
     const { filename, hash } = fields;
     const { chunk } = file;
-    // console.log(filename, hash, chunk);
+    // console.log("filename", filename, "hash", hash, chunk);
 
-    const chunkDir = path.resolve(UPLOAD_DIR, filename[0]);  // 为啥传过来是个数组
+    const chunkDir = path.resolve(UPLOAD_DIR, filename[0]); // 为啥传过来是个数组
 
     // 创建目录
     if (!fse.existsSync(chunkDir)) {
       await fse.mkdirs(chunkDir);
     }
 
-    await fse.move(chunk.path, `${chunkDir}/${hash[0]}`);
+    await fse.move(chunk[0].path, `${chunkDir}/${hash[0]}`);
   });
   res.end("received!!");
 });
 
-app.get("/api/merge", (req, res) => {
+// 处理post请求携带的流式数据
+const resolvePost = req => {
+  return new Promise(resolve => {
+    let chunk = "";
+    req.on("data", data => {
+      chunk += data;
+    });
+    req.on("end", () => {
+      resolve(JSON.parse(chunk));
+    });
+  });
+};
+
+const pipeStream = (path, writeStream) => {
+  new Promise((resolve => {
+    const readStream = fse.createReadStream(path);
+    readStream.on('end', () => {
+      fse.unlinkSync(path);
+      resolve()
+    })
+    readStream.pipe(writeStream);
+  }))
+}
+
+const mergeChunk = async (filePath, filename, size) => {
+  const chunkDir = path.resolve(UPLOAD_DIR, filename);
+  const chunkPaths = await fse.readdir(chunkDir);
+  chunkPaths.sort((a, b) => a.split("-")[1] - b.split("-")[1]);
+  await Promise.all(chunkPaths.map((chunkPath, index) => {
+    return pipeStream(
+      path.resolve(chunkDir, chunkPath),
+      fse.createWriteStream(filePath, {
+        start: index * size,
+        end: (index + 1) *  size
+      })
+    )
+  }))
+}
+
+app.post("/api/merge", async (req, res) => {
+  const { filename, size = 1024 } = await resolvePost(req);
+  // console.log(filename);
+  const filePath = path.resolve(UPLOAD_DIR, filename);
+  console.log(filePath)
+  await mergeChunk(filePath, filename, size)
   res.send({ message: "已合并" });
 });
 
