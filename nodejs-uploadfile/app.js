@@ -111,40 +111,46 @@ const resolvePost = req => {
 };
 
 const pipeStream = (path, writeStream) => {
-  new Promise((resolve => {
+  new Promise(resolve => {
     const readStream = fse.createReadStream(path);
-    readStream.on('end', () => {
+    readStream.on("end", () => {
       fse.unlinkSync(path);
-      resolve()
-    })
+      resolve();
+    });
     readStream.pipe(writeStream);
-  }))
-}
+  });
+};
 
 const mergeChunk = async (filePath, filename, size) => {
   const chunkDir = path.resolve(UPLOAD_DIR, filename);
   const chunkPaths = await fse.readdir(chunkDir);
   chunkPaths.sort((a, b) => a.split("-")[1] - b.split("-")[1]);
-  await Promise.all(chunkPaths.map((chunkPath, index) => {
-    return pipeStream(
-      path.resolve(chunkDir, chunkPath),
-      fse.createWriteStream(filePath, {
-        start: index * size,
-        end: (index + 1) *  size
-      })
-    )
-  }))
-}
+  await Promise.all(
+    chunkPaths.map((chunkPath, index) => {
+      return pipeStream(
+        path.resolve(chunkDir, chunkPath),
+        fse.createWriteStream(filePath, {
+          start: index * size,
+          end: (index + 1) * size,
+        })
+      );
+    })
+  ).then(res => {
+    console.log(res, "复制完成");
+  });
+};
 
 app.post("/api/merge", async (req, res) => {
   const { filename, size = 1024 } = await resolvePost(req);
   // console.log(filename);
   const filePath = path.resolve(UPLOAD_DIR, filename);
-  console.log(filePath)
-  await mergeChunk(filePath, filename, size)
+  console.log(filePath);
+  debugger
+  await mergeChunk(filePath, filename, size);
   res.send({ message: "已合并" });
 });
 
+debugger
 // console.log(editSelf)
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
