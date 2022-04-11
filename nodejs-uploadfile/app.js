@@ -17,6 +17,15 @@ var users = require("./routes/users");
 
 var app = express();
 
+app.all('*', function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+  res.header("X-Powered-By", ' 3.2.1')
+  // res.header("Content-Type", "application/json;charset=utf-8");
+  next();
+});
+
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -25,7 +34,9 @@ app.set("view engine", "ejs");
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger("dev"));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -35,14 +46,22 @@ app.use("/users", users);
 // get方法
 app.get("/api/user", (req, res) => {
   // res.status(201).end();
-  res.json({ name: "xiaoming", age: 19 });
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+  res.json({
+    name: "xiaoming",
+    age: 19
+  });
 });
 
 // post方法
 app.post("/api/user", (req, res) => {
   console.log(req.body);
   // res.status(201).end();
-  res.send({ message: "保存成功" });
+  res.send({
+    message: "保存成功"
+  });
 });
 
 // 获取文件
@@ -78,11 +97,19 @@ app.get("/api/img", (req, res) => {
 // });
 
 app.post("/api/uploadFile", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
   const form = new multipart.Form();
   form.parse(req, async (err, fields, file) => {
     console.log(fields);
-    const { filename, hash } = fields;
-    const { chunk } = file;
+    const {
+      filename,
+      hash
+    } = fields;
+    const {
+      chunk
+    } = file;
     // console.log("filename", filename, "hash", hash, chunk);
 
     const chunkDir = path.resolve(UPLOAD_DIR, filename[0]); // 为啥传过来是个数组
@@ -125,29 +152,41 @@ const mergeChunk = async (filePath, filename, size) => {
   const chunkDir = path.resolve(UPLOAD_DIR, filename);
   const chunkPaths = await fse.readdir(chunkDir);
   chunkPaths.sort((a, b) => a.split("-")[1] - b.split("-")[1]);
-  await Promise.all(
-    chunkPaths.map((chunkPath, index) => {
-      return pipeStream(
-        path.resolve(chunkDir, chunkPath),
-        fse.createWriteStream(filePath, {
-          start: index * size,
-          end: (index + 1) * size,
-        })
-      );
-    })
-  ).then(res => {
-    console.log(res, "复制完成");
-  });
-};
+  await Promise.all(chunkPaths.map((chunkPath, index) => {
+    return pipeStream(
+      path.resolve(chunkDir, chunkPath),
+      fse.createWriteStream(filePath, {
+        start: index * size,
+        end: (index + 1) * size
+      })
+    )
+  }))
+}
 
 app.post("/api/merge", async (req, res) => {
-  const { filename, size = 1024 } = await resolvePost(req);
+  console.log(req.method);
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "*");
+  res.header("Access-Control-Allow-Methods", "*");
+  res.header("Content-Type", "application/json;charset=utf-8");
+
+  // 处理options请求
+  if (req.method === 'OPTIONS') {
+    res.status(200);
+    res.end();
+    return
+  }
+  const {
+    filename,
+    size = 1024
+  } = await resolvePost(req);
   // console.log(filename);
   const filePath = path.resolve(UPLOAD_DIR, filename);
-  console.log(filePath);
-  debugger
+  console.log(filePath)
   await mergeChunk(filePath, filename, size);
-  res.send({ message: "已合并" });
+  res.end({
+    message: "已合并"
+  });
 });
 
 debugger
