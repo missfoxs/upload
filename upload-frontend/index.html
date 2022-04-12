@@ -41,7 +41,7 @@
     document.getElementById('getData').onclick = getData // 使用Module后要用这种方式 // TODO:为啥
 
     function sendData() {
-      fetch('http://localhost:3000/api/user', {
+      fetch('http://localhost:3000/users', {
         method: 'POST',
         headers: {
           contentType: 'application/json'
@@ -150,14 +150,19 @@
     // 开始上传
     async function uploadFile(event) {
       const file = event.target.files[0];
-      // const data = new FormData()
-      // data.append('image', file);
-      // data.append('user', 'zhouming');
-      const size = 0.5 * 1024 * 1024; // 0.5M
-      const chunkList = sliceFile(file, size)
-      console.log(chunkList);
-      const res = await Promise.all(generateFetchList(chunkList, file.name, new Date()));
-      console.log(res);
+      const data = new FormData()
+      data.append('file', file);
+      data.append('user', 'zhouming');
+      fetch('http://127.0.0.1:3000/upload', {
+        method: 'POST',
+        mode: 'no-cors',
+        body: data
+      })
+      // const size = 0.5 * 1024 * 1024; // 0.5M
+      // const chunkList = sliceFile(file, size)
+      // console.log(chunkList);
+      // const res = await Promise.all(generateFetchList(chunkList, file.name, new Date()));
+      // console.log(res);
       // mergeRequest(file.name);
     }
 

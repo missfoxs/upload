@@ -6,8 +6,10 @@ const path = require("path");
 const staticServer = require("koa-static");
 const compose = require("koa-compose");
 const cors = require("koa2-cors");
+const fs = require("fs");
 
 const app = new Koa();
+const UPLOAD_DIR = path.join(__dirname, "./uploads");
 
 // 接口
 router.get("/index", ctx => {
@@ -17,14 +19,24 @@ router.get("/index", ctx => {
   console.log(ctx.request.querystring);
 });
 
-router.post("/users", KoaBody(), async ctx => {
+router.post("/users", async ctx => {
   console.log(ctx.request.body);
-  ctx.body = { message: "success" };
+  ctx.body = { message: "上传成功" };
 });
 
-router.post("upload", ctx => {
-  console.log(ctx);
-  ctx.body = { message: "上传成功" };
+router.post("/upload", async ctx => {
+  // console.log(ctx.request.body);
+  const files = ctx.request.files || {};
+  const filePaths = [];
+  for (const key in files) {
+    const file = files[key];
+    const filePath = path.join(UPLOAD_DIR, file.name);
+    const reader = fs.createReadStream(file.path);
+    const write = fs.createWriteStream(filePath);
+    reader.pipe(write);
+    filePaths.push(filePath);
+  }
+  ctx.body = filePaths;
 });
 
 // 页面
@@ -99,11 +111,11 @@ const handlerError = async (ctx, next) => {
 // https://juejin.cn/post/6945640015816982564
 // app.use(compose([handlerError, one, two, three, logger]));
 app.use(cors());
-// app.use(
-//   KoaBody({
-//     multipart: true,
-//   })
-// ); // 此处顺序不可以变。
+app.use(
+  KoaBody({
+    multipart: true,
+  })
+); // 此处顺序不可以变。
 app.use(router.routes());
 // app.use(cors);
 // 静态资源, 直接下载？
