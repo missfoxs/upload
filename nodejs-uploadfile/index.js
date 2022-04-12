@@ -5,22 +5,9 @@ const KoaBody = require("koa-body");
 const path = require("path");
 const staticServer = require("koa-static");
 const compose = require("koa-compose");
+const cors = require("koa2-cors");
 
 const app = new Koa();
-// app.use(apiRouter.routes());
-// app.use(apiRouter.allowedMethods());
-// app.use(
-//   KoaBody({
-//     multipart: true, // 支持文件上传
-//     // encoding: "gzip",
-//     // formidable: {
-//     //   uploadDir: path.join(__dirname, "public/upload/"), // 设置文件上传目录
-//     //   keepExtensions: true, // 保持文件的后缀
-//     //   maxFieldsSize: 2 * 1024 * 1024, // 文件上传大小
-//     //   onFileBegin: (name, file) => {},
-//     // },
-//   })
-// );
 
 // 接口
 router.get("/index", ctx => {
@@ -30,11 +17,14 @@ router.get("/index", ctx => {
   console.log(ctx.request.querystring);
 });
 
-router.post("/users", ctx => {
-  const body = ctx.request.body;
-  console.log("body", body);
-  if (!body.name) ctx.throw(400, ".name required");
-  ctx.body = { name: body.name };
+router.post("/users", KoaBody(), async ctx => {
+  console.log(ctx.request.body);
+  ctx.body = { message: "success" };
+});
+
+router.post("upload", ctx => {
+  console.log(ctx);
+  ctx.body = { message: "上传成功" };
 });
 
 // 页面
@@ -77,6 +67,7 @@ const three = (ctx, next) => {
   // ctx.throw(500);
 };
 
+// 错误处理中间件
 const handlerError = async (ctx, next) => {
   try {
     await next();
@@ -87,15 +78,34 @@ const handlerError = async (ctx, next) => {
     };
   }
 };
+
+// 跨域中间件
+// const cors = async (ctx, next) => {
+//   ctx.set("Access-Control-Allow-Origin", "*");
+//   ctx.set("Access-Control-Allow-Headers", "*");
+//   ctx.set("Access-Control-Allow-Methods", "*");
+//   if (ctx.method == "OPTIONS") {
+//     ctx.body = 200;
+//   } else {
+//     await next();
+//   }
+// };
+
 // app.use(one);
 // app.use(two);
 // app.use(three);
 // app.use(logger);
-// app.use(compose([handlerError, one, two, three, logger])); // 错误处理的要放在最开头
-
-app.use(compose([handlerError, one, two, three, logger]));
-app.use(KoaBody()); // 此处顺序不可以变。
+// 错误处理的要放在最开头, 在使用中间件的时候最好加上async await否则后面的post等请求可以接收到数据，但是返回给前段是404
+// https://juejin.cn/post/6945640015816982564
+// app.use(compose([handlerError, one, two, three, logger]));
+app.use(cors());
+// app.use(
+//   KoaBody({
+//     multipart: true,
+//   })
+// ); // 此处顺序不可以变。
 app.use(router.routes());
+// app.use(cors);
 // 静态资源, 直接下载？
 // const static = staticServer(path.join(__dirname));
 
@@ -103,4 +113,4 @@ app.use(router.routes());
 // app.use(Route.get("/about", About));
 // app.use(static);
 
-app.listen(3000);
+app.listen(3000, () => "run in 3000");
