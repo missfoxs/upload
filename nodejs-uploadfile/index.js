@@ -13,6 +13,10 @@ const UPLOAD_DIR = path.join(__dirname, "./uploads");
 
 // 接口
 router.get("/index", ctx => {
+  const {
+    request: { url },
+  } = ctx;
+  console.log("url", url);
   console.log(ctx.query);
   console.log(ctx.querystring);
   console.log(ctx.request.query.name);
@@ -21,7 +25,11 @@ router.get("/index", ctx => {
 
 router.post("/users", async ctx => {
   console.log(ctx.request.body);
-  ctx.body = { message: "上传成功" };
+  ctx.body = {
+    code: 0,
+    message: "请求成功",
+    data: [{ name: "xiaoming", age: 18 }],
+  };
 });
 
 router.post("/upload", async ctx => {
@@ -125,4 +133,4 @@ app.use(router.routes());
 // app.use(Route.get("/about", About));
 // app.use(static);
 
-app.listen(3000, () => "run in 3000");
+app.listen(3001, () => "run in 3001");
