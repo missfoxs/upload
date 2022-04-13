@@ -9,7 +9,7 @@ const cors = require("koa2-cors");
 const fs = require("fs");
 
 const app = new Koa();
-const UPLOAD_DIR = path.join(__dirname, "./uploads");
+const UPLOAD_DIR = path.join(__dirname, "./targets");
 
 // 接口
 router.get("/index", ctx => {
@@ -33,7 +33,7 @@ router.post("/users", async ctx => {
 });
 
 router.post("/upload", async ctx => {
-  // console.log(ctx.request.body);
+  console.log(ctx.request);
   const files = ctx.request.files || {};
   const filePaths = [];
   for (const key in files) {
