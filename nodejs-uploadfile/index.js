@@ -7,9 +7,11 @@ const staticServer = require("koa-static");
 const compose = require("koa-compose");
 const cors = require("koa2-cors");
 const fs = require("fs");
+const fse = require("fs-extra");
 
 const app = new Koa();
 const UPLOAD_DIR = path.join(__dirname, "./targets");
+const SPLIT_SYMBAL = "---";
 
 // 接口
 router.get("/index", ctx => {
@@ -33,18 +35,52 @@ router.post("/users", async ctx => {
 });
 
 router.post("/upload", async ctx => {
-  console.log(ctx.request);
+  console.log(ctx.request.body, ctx.request.files);
+  const { chunkName, fileName } = ctx.request.body;
   const files = ctx.request.files || {};
   const filePaths = [];
   for (const key in files) {
     const file = files[key];
-    const filePath = path.join(UPLOAD_DIR, file.name);
+    const fileDir = path.join(
+      UPLOAD_DIR,
+      // `${SPLIT_SYMBAL}${fileName}`,
+      // fileName,
+      chunkName
+    );
+
+    // if (!fse.existsSync(fileDir)) {
+    //   await fse.mkdirs(fileDir);
+    // }
+
     const reader = fs.createReadStream(file.path);
-    const write = fs.createWriteStream(filePath);
+    const write = fs.createWriteStream(fileDir);
     reader.pipe(write);
-    filePaths.push(filePath);
+    filePaths.push(fileDir);
   }
   ctx.body = filePaths;
+});
+
+const mergeChunk = async (chunkDir, fileName) => {
+  const chunkPaths = await fse.readdir(chunkDir);
+  chunkPaths.sort(
+    (a, b) => a.split(SPLIT_SYMBAL)[1] - b.split(SPLIT_SYMBAL)[1]
+  );
+  console.log("chunkPaths", chunkPaths);
+  const writeStream = fse.createWriteStream(path.resolve(UPLOAD_DIR, fileName));
+  chunkPaths.map(chunkPath => {
+    const readStream = fse.createReadStream(path.resolve(chunkPath));
+  });
+};
+
+// 接受请求，合并文件
+router.post("/merge", async ctx => {
+  const { fileName } = ctx.request.body;
+  const chunkDir = path.resolve(UPLOAD_DIR, fileName);
+  mergeChunk(chunkDir, fileName);
+  ctx.body = {
+    code: 0,
+    message: "合并成功",
+  };
 });
 
 // 页面
@@ -134,3 +170,4 @@ app.use(router.routes());
 // app.use(static);
 
 app.listen(3001, () => "run in 3001");
+console.log(path.resolve("/foo", "bar", "/baz/apple", "aaa", ".."));
