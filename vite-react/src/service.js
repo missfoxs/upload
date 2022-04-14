@@ -13,3 +13,10 @@ export async function upload(file) {
     body: file,
   });
 }
+
+export async function merge(body) {
+  return request("/merge", {
+    method: "post",
+    body,
+  });
+}

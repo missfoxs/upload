@@ -41,42 +41,62 @@ router.post("/upload", async ctx => {
   const filePaths = [];
   for (const key in files) {
     const file = files[key];
-    const fileDir = path.join(
-      UPLOAD_DIR,
-      // `${SPLIT_SYMBAL}${fileName}`,
-      // fileName,
-      chunkName
-    );
+    const chunkDir = path.join(UPLOAD_DIR, fileName);
 
-    // if (!fse.existsSync(fileDir)) {
-    //   await fse.mkdirs(fileDir);
-    // }
+    // 如果文件不存在，则创建
+    if (!fse.existsSync(chunkDir)) {
+      await fse.mkdirs(chunkDir);
+    }
 
     const reader = fs.createReadStream(file.path);
-    const write = fs.createWriteStream(fileDir);
+    const write = fs.createWriteStream(path.join(chunkDir, chunkName));
     reader.pipe(write);
-    filePaths.push(fileDir);
+    filePaths.push(chunkDir);
   }
   ctx.body = filePaths;
 });
 
-const mergeChunk = async (chunkDir, fileName) => {
-  const chunkPaths = await fse.readdir(chunkDir);
+const pipeStream = (path, writeStream) =>
+  new Promise(resolve => {
+    const readStream = fse.createReadStream(path);
+    readStream.on("end", () => {
+      fse.unlinkSync(path);
+      resolve(1);
+    });
+    readStream.pipe(writeStream);
+  });
+
+const mergeChunk = async (chunkDir, fileName, size) => {
+  let chunkPaths = await fse.readdir(chunkDir);
   chunkPaths.sort(
     (a, b) => a.split(SPLIT_SYMBAL)[1] - b.split(SPLIT_SYMBAL)[1]
   );
-  console.log("chunkPaths", chunkPaths);
-  const writeStream = fse.createWriteStream(path.resolve(UPLOAD_DIR, fileName));
-  chunkPaths.map(chunkPath => {
-    const readStream = fse.createReadStream(path.resolve(chunkPath));
-  });
+  chunkPaths = chunkPaths.map(cp => path.join(UPLOAD_DIR, fileName, cp));
+  const writePath = path.resolve(UPLOAD_DIR, "generate", fileName);
+  // console.log(chunkPaths, writePath);
+  // return
+
+  const res = await Promise.all(
+    chunkPaths.map((chunkPath, index) =>
+      pipeStream(
+        chunkPath,
+        fse.createWriteStream(writePath, {
+          start: index * size,
+          end: (index + 1) * size,
+        })
+      )
+    )
+  );
+  console.log("res", res);
 };
 
 // 接受请求，合并文件
 router.post("/merge", async ctx => {
-  const { fileName } = ctx.request.body;
+  const { fileName, size } = ctx.request.body;
   const chunkDir = path.resolve(UPLOAD_DIR, fileName);
-  mergeChunk(chunkDir, fileName);
+  console.log(ctx.request.body);
+  // return
+  mergeChunk(chunkDir, fileName, size);
   ctx.body = {
     code: 0,
     message: "合并成功",
@@ -170,4 +190,5 @@ app.use(router.routes());
 // app.use(static);
 
 app.listen(3001, () => "run in 3001");
-console.log(path.resolve("/foo", "bar", "/baz/apple", "aaa", ".."));
+// console.log(path.join("/foo", "bar", "/baz/apple", "aaa", ".."));
+// console.log(path.resolve("/foo", "bar", "/baz/apple", "aaa", ".."));
