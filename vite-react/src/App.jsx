@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import { getData, merge, upload } from "./service";
 import { baseURL } from "./utils";
-const SIZE = 1 * 1204 * 1024;
+const SIZE = 2 * 1204 * 1024;
 
 function App() {
   const [fileName, setFileName] = useState();
@@ -34,8 +34,8 @@ function App() {
   };
 
   // 发送合并请求
-  const mergeRequest = async () => {
-    const res = await merge(fileName);
+  const mergeRequest = async fileName => {
+    const res = await merge({ fileName, size: SIZE });
     if (res.code === 0) {
       alert("合并成功");
     }
@@ -53,7 +53,7 @@ function App() {
       Promise.all(createUploadPromise(fileChunks, file.name)).then(res => {
         console.log(res);
         // 发送合并请求
-        // mergeRequest();
+        mergeRequest(file.name);
       });
     });
   };
@@ -71,7 +71,10 @@ function App() {
       <div
         onClick={async () => {
           // const res = await merge({ fileName: "openresty-1.15.8.1-win64.zip" });
-          const res = await merge({ fileName: "微信图片_20220414212958.png", size: SIZE });
+          const res = await merge({
+            fileName: "微信图片_20220414212958.png",
+            size: SIZE,
+          });
         }}
       >
         merge
