@@ -20,3 +20,10 @@ export async function merge(body) {
     body,
   });
 }
+
+export async function verify(body) {
+  return request("/verify", {
+    method: "post",
+    body,
+  });
+}

@@ -103,6 +103,26 @@ router.post("/merge", async ctx => {
   };
 });
 
+// 提取文件后缀名
+const extractExt = fileName => fileName.split(".").pop();
+
+// 根据hash验证文件是否已上传
+router.post("/verify", async ctx => {
+  const { hash, fileName } = ctx.request.body;
+  const ext = extractExt(fileName);
+  // const url = path.join(UPLOAD_DIR, `${hash}${ext}`);
+  const url = path.join(UPLOAD_DIR, "generate", "openresty-1.15.8.1-win64.zi");
+  if (fse.existsSync(url)) {
+    ctx.body = {
+      shouleUpload: false,
+    };
+  } else {
+    ctx.body = {
+      shouleUpload: true,
+    };
+  }
+});
+
 // 页面
 const Index = ctx => {
   const body = ctx.request.body;
