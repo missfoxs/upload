@@ -36,14 +36,21 @@ router.post("/users", async ctx => {
 
 router.post("/upload", async ctx => {
   console.log(ctx.request.body, ctx.request.files);
-  const { chunkName, fileName } = ctx.request.body;
+  const { chunkName, fileName, hash } = ctx.request.body;
   const files = ctx.request.files || {};
   const filePaths = [];
   for (const key in files) {
     const file = files[key];
-    const chunkDir = path.join(UPLOAD_DIR, fileName);
+    const fileDir = path.join(UPLOAD_DIR, `${hash}${extractExt(fileName)}`); // fileName要存在哪儿，暂时还不知道。
+    const chunkDir = path.join(UPLOAD_DIR, hash);
 
-    // 如果文件不存在，则创建
+    // 文件已存在直接返回
+    if (fse.existsSync(fileDir)) {
+      ctx.body = { code: 0, message: "file exist" };
+      return;
+    }
+
+    // 如果切片目录不存在，则创建
     if (!fse.existsSync(chunkDir)) {
       await fse.mkdirs(chunkDir);
     }
@@ -52,8 +59,8 @@ router.post("/upload", async ctx => {
     const write = fs.createWriteStream(path.join(chunkDir, chunkName));
     reader.pipe(write);
     filePaths.push(chunkDir);
+    ctx.body = filePaths;
   }
-  ctx.body = filePaths;
 });
 
 const pipeStream = (path, writeStream) =>
@@ -110,8 +117,7 @@ const extractExt = fileName => fileName.split(".").pop();
 router.post("/verify", async ctx => {
   const { hash, fileName } = ctx.request.body;
   const ext = extractExt(fileName);
-  // const url = path.join(UPLOAD_DIR, `${hash}${ext}`);
-  const url = path.join(UPLOAD_DIR, "generate", "openresty-1.15.8.1-win64.zi");
+  const url = path.join(UPLOAD_DIR, hash);
   if (fse.existsSync(url)) {
     ctx.body = {
       shouleUpload: false,
@@ -122,18 +128,6 @@ router.post("/verify", async ctx => {
     };
   }
 });
-
-// 页面
-const Index = ctx => {
-  const body = ctx.request.body;
-  if (!body.name) ctx.throw(400, ".name required");
-  console.log(body.name);
-  ctx.response.body = { name: body.name };
-};
-
-const About = ctx => {
-  ctx.response.body = '<a href="/">Index Page</a>';
-};
 
 // logger 中间件
 // 在request和response之间执行
@@ -204,11 +198,6 @@ app.use(router.routes());
 // app.use(cors);
 // 静态资源, 直接下载？
 // const static = staticServer(path.join(__dirname));
-
-// app.use(Route.get("/", Index));
-// app.use(Route.get("/about", About));
 // app.use(static);
 
 app.listen(3001, () => "run in 3001");
-// console.log(path.join("/foo", "bar", "/baz/apple", "aaa", ".."));
-// console.log(path.resolve("/foo", "bar", "/baz/apple", "aaa", ".."));

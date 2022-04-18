@@ -5,10 +5,11 @@ import { baseURL } from "./utils";
 const SIZE = 1 * 1204 * 1024;
 
 function App() {
-  const [fileName, setFileName] = useState();
   const [percentage, setPercentage] = useState(0);
-  const [hash, setHash] = useState();
-  const hashRef = useRef(hash);
+  // const [fileName, setFileName] = useState();
+  // const [hash, setHash] = useState();
+  const hashRef = useRef("");
+  const fileNameRef = useRef("");
   // 进度
   const handleProgress = e => {
     console.log(e);
@@ -39,14 +40,14 @@ function App() {
     return chunks;
   };
 
-  const generateUploadRequest = (fileList, name) => {
+  const generateUploadRequest = fileList => {
     return fileList.map((file, idx) => {
       const formData = new FormData();
       formData.append("chunk", file);
       formData.append("idx", idx);
-      formData.append("hash", hashRef.current?.hash);
-      formData.append("chunkName", name + "---" + idx);
-      formData.append("fileName", name);
+      formData.append("hash", hashRef.current);
+      formData.append("chunkName", hashRef.current + "---" + idx);
+      formData.append("fileName", fileNameRef.current);
       return request(formData);
     });
   };
@@ -86,25 +87,29 @@ function App() {
       alert("请上传文件");
       return;
     }
-    setFileName(file.name); // set后不能立马获取到
+    // setFileName(file.name); // set后不能立马获取到
+    fileNameRef.current = file.name;
     const fileChunks = sliceFile(file);
     const _hash = await calculateHash(fileChunks);
     // setHash(_hash);
     hashRef.current = _hash;
     console.log("hash", _hash);
     // return;
-    Promise.all(generateUploadRequest(fileChunks, file.name)).then(res => {
-      console.log(res);
-      // 发送合并请求
-      mergeRequest(file.name);
-    });
+    const res = await Promise.all(generateUploadRequest(fileChunks));
+    console.log(res);
+    // 发送合并请求
+    mergeRequest(file.name);
   };
 
   const verifyShouleUpload = async () => {
-    const res = await verify({ fileName: "dist.zip", hash: "111" });
+    const res = await verify({
+      fileName: fileNameRef.current,
+      hash: hashRef.current,
+    });
     const { shouleUpload } = res;
     if (!shouleUpload) {
       console.log("上传成功");
+      alert("miao chuan~~");
     }
   };
 
@@ -115,7 +120,7 @@ function App() {
           const res = await getData({ name: "JACK" });
         }}
       >
-        POST
+        post
       </div>
       <input type="file" onChange={handleUpload} />
       {!!percentage && <div>{percentage}%</div>}
@@ -126,11 +131,12 @@ function App() {
             fileName: "微信图片_20220414212958.png",
             size: SIZE,
           });
+          s;
         }}
       >
         merge
       </div>
-      <div onClick={verifyShouleUpload}>秒传</div>
+      <div onClick={verifyShouleUpload}>miao chuan</div>
     </>
   );
 }
